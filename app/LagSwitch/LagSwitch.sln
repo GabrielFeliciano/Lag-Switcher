@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32002.261
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LagSwitch", "LagSwitch\LagSwitch.csproj", "{87C1EC33-7748-4804-B676-304F3E9E58D7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{87C1EC33-7748-4804-B676-304F3E9E58D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87C1EC33-7748-4804-B676-304F3E9E58D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87C1EC33-7748-4804-B676-304F3E9E58D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87C1EC33-7748-4804-B676-304F3E9E58D7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {20F27240-B676-4254-AD6A-E98AFE15980A}
+	EndGlobalSection
+EndGlobal
