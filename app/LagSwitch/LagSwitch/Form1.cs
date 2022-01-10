@@ -7,46 +7,67 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using WindowsFirewallHelper;
 using System.Windows.Input;
 using WK.Libraries.HotkeyListenerNS;
 using System.Security.Principal;
+using LagSwitch.States;
 
 namespace LagSwitch
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        IFirewallRule rule;
-        HotkeyListener hkl = new HotkeyListener();
-        Hotkey hotkey;
+        SettingsDataLayer _settingsDataLayer;
+        HotkeyService _hotkeyService;
+        LagService _lagService;
 
-        public Form1()
+        AlwaysOnTop _alwaysOnTopWindow;
+
+        SettingsState latestSettings = new SettingsState();
+
+        public MainForm(
+            SettingsDataLayer settingsDataLayer,
+            HotkeyService hotkeyService,
+            LagService lagService,
+            AlwaysOnTop alwaysOnTop
+        )
         {
-            if (!isAdmin())
+            _lagService = lagService;
+            _settingsDataLayer = settingsDataLayer;
+            _hotkeyService = hotkeyService;
+            _alwaysOnTopWindow = alwaysOnTop;
+
+            // check if user has admin privileges
+            if (!Utils.isAdmin())
             {
-                while(MessageBox.Show("This program needs admin privileges! :(", "", MessageBoxButtons.OK) != DialogResult.OK) { 
-
-                }
-
+                while (
+                    MessageBox.Show(
+                        "This program needs admin privileges! :(", 
+                        "", 
+                        MessageBoxButtons.OK
+                    ) != DialogResult.OK
+                );
                 System.Environment.Exit(0);
             }
 
+            // init
             InitializeComponent();
-            hkl.HotkeyPressed += Hkl_HotkeyPressed;
-
-            // load settings
-            pathShow.Text = Properties.Settings.Default.path;
-            timeInput.Value = Properties.Settings.Default.timer;
-            try
-            {
-                KeysConverter kc = new KeysConverter();
-                Keys key = (Keys)kc.ConvertFromString(Properties.Settings.Default.hotkey);
-                SetGlobalHotkey(key);
-            } catch { }
+            InitDependecies();
         }
 
-        private void folderBrowserDialog1_HelpRequest(object sender, EventArgs e)
+        private void InitDependecies()
         {
+            _lagService.OnStatusChange += OnLagStatusChanged;
+            _hotkeyService.HotkeyListeners += HotkeyPressed;
+            _settingsDataLayer.AddListener(OnSettingsChanged);
+        }
+
+        private void OnSettingsChanged(object sender, SettingsState status)
+        {
+            latestSettings = status;
+
+            pathShow.Text = status.path;
+            timeInput.Value = status.timeout;
+            shortcutInput.Text = status.hotkeyString;
         }
 
         private void searchBtn_Click(object sender, EventArgs e)
@@ -57,49 +78,26 @@ namespace LagSwitch
         private void openFileDialog_FileOk(object sender, CancelEventArgs e)
         {
             var path = openFileDialog.FileName;
-            pathShow.Text = path;
-
-            Properties.Settings.Default.Upgrade();
-
-            // save path
-            Properties.Settings.Default.path = path;
-            Properties.Settings.Default.Save();
+            _settingsDataLayer.SetPath(path);
         }
 
         private void lagBtn_Click(object sender, EventArgs e)
         {
-            Lag();
+            _lagService.Lag(pathShow.Text, (int)timeInput.Value);
         }
 
-        private void timer_Tick(object sender, EventArgs e)
+        public void shortcutInput_KeyDown(object sender, KeyEventArgs eventArgs)
         {
-            timer.Enabled = false;
-            FirewallManager.Instance.Rules.Remove(rule);
-            lagBtn.Enabled = true;
-        }
+            eventArgs.Handled = true;
+            eventArgs.SuppressKeyPress = true;
 
-        private void shortcutInput_TextChanged(object sender, EventArgs e)
-        {
+            //remove modifier keys
+            Keys pressedKey = eventArgs.KeyData ^ eventArgs.Modifiers; 
 
-        }
-
-        private void shortcutInput_KeyDown(object sender, KeyEventArgs e)
-        {
-            Keys modifierKeys = e.Modifiers;
-
-            Keys pressedKey = e.KeyData ^ modifierKeys; //remove modifier keys
-
-            if (pressedKey != Keys.Escape)
+            // check if pressed key is not esc nor enter
+            if (pressedKey != Keys.Escape && pressedKey != Keys.Enter && pressedKey != Keys.Return)
             {
-                //do stuff with pressed and modifier keys
-                var converter = new KeysConverter();
-                var keysString = converter.ConvertToString(e.KeyData);
-
-                SetGlobalHotkey(e.KeyData);
-
-                // save hotkey
-                Properties.Settings.Default.hotkey = keysString;
-                Properties.Settings.Default.Save();
+                _settingsDataLayer.SetHotkey(eventArgs.KeyData);
             } else
             {
                 // remove focus
@@ -107,73 +105,33 @@ namespace LagSwitch
             }
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void HotkeyPressed(object sender, HotkeyEventArgs e)
         {
-
-        }
-
-        private void Hkl_HotkeyPressed(object sender, HotkeyEventArgs e)
-        {
-            if (e.Hotkey == hotkey)
+            if (!shortcutInput.Focused)
             {
-                Lag();
+                _lagService.Lag(pathShow.Text, (int)timeInput.Value);
             }
         }
 
-        private void SetGlobalHotkey (Keys keys)
+        public void timeInput_ValueChanged(object sender, EventArgs e)
         {
-            // hotkey
-            hkl.Remove(hotkey);
-            hotkey = new Hotkey(keys & Keys.Modifiers, keys & ~Keys.Modifiers);
-            hkl.Add(hotkey);
-
-            var converter = new KeysConverter();
-            var keysString = converter.ConvertToString(keys);
-            shortcutInput.Text = keysString;
+            _settingsDataLayer.SetTimeout(timeInput.Value);
         }
 
-        private void Lag ()
+        void OnLagStatusChanged (object sender, bool isLagging)
         {
-            if (shortcutInput.Focused) return;
-
-            rule = FirewallManager.Instance.CreateApplicationRule(
-                FirewallProfiles.Domain | FirewallProfiles.Private | FirewallProfiles.Public,
-                @"A-LagSwitch",
-                FirewallAction.Block,
-                pathShow.Text
-            );
-            rule.Direction = FirewallDirection.Inbound | FirewallDirection.Outbound;
-            FirewallManager.Instance.Rules.Add(rule);
-            timer.Enabled = true;
-            lagBtn.Enabled = false;
+            lagBtn.Enabled = !isLagging;
         }
 
-        private void timeInput_ValueChanged(object sender, EventArgs e)
+        private void AlwaysOnTopCheckBox_CheckedChanged(object sender, EventArgs e)
         {
-            // set timer
-            timer.Interval = ((int)timeInput.Value);
-
-            // save timer
-            Properties.Settings.Default.timer = timeInput.Value;
-            Properties.Settings.Default.Save();
-        }
-
-        bool isAdmin()
-        {
-            bool isAdmin;
-            try
+            if (alwaysOnTopCheckBox.Checked)
             {
-                //get the currently logged in user
-                WindowsIdentity user = WindowsIdentity.GetCurrent();
-                WindowsPrincipal principal = new WindowsPrincipal(user);
-                isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
-            }
-            catch
+                _alwaysOnTopWindow.Show();
+            } else
             {
-                isAdmin = false;
+                _alwaysOnTopWindow.Hide();
             }
-
-            return isAdmin;
         }
     }
 }

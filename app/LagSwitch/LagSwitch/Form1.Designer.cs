@@ -1,7 +1,7 @@
 ﻿
 namespace LagSwitch
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -40,12 +40,13 @@ namespace LagSwitch
             this.timer = new System.Windows.Forms.Timer(this.components);
             this.shortcutInput = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
+            this.alwaysOnTopCheckBox = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.timeInput)).BeginInit();
             this.SuspendLayout();
             // 
             // lagBtn
             // 
-            this.lagBtn.Location = new System.Drawing.Point(238, 89);
+            this.lagBtn.Location = new System.Drawing.Point(238, 70);
             this.lagBtn.Name = "lagBtn";
             this.lagBtn.Size = new System.Drawing.Size(103, 23);
             this.lagBtn.TabIndex = 0;
@@ -55,25 +56,25 @@ namespace LagSwitch
             // 
             // timeInput
             // 
-            this.timeInput.Location = new System.Drawing.Point(12, 91);
+            this.timeInput.Location = new System.Drawing.Point(10, 73);
             this.timeInput.Maximum = new decimal(new int[] {
             1000000,
             0,
             0,
             0});
             this.timeInput.Name = "timeInput";
-            this.timeInput.Size = new System.Drawing.Size(120, 20);
+            this.timeInput.Size = new System.Drawing.Size(107, 20);
             this.timeInput.TabIndex = 1;
             this.timeInput.ValueChanged += new System.EventHandler(this.timeInput_ValueChanged);
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(7, 75);
+            this.label1.Location = new System.Drawing.Point(7, 57);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(98, 13);
+            this.label1.Size = new System.Drawing.Size(52, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Time in miliseconds";
+            this.label1.Text = "Time (ms)";
             // 
             // pathShow
             // 
@@ -111,31 +112,41 @@ namespace LagSwitch
             // timer
             // 
             this.timer.Interval = 1;
-            this.timer.Tick += new System.EventHandler(this.timer_Tick);
             // 
             // shortcutInput
             // 
-            this.shortcutInput.Location = new System.Drawing.Point(139, 91);
+            this.shortcutInput.Location = new System.Drawing.Point(123, 72);
             this.shortcutInput.Name = "shortcutInput";
-            this.shortcutInput.Size = new System.Drawing.Size(92, 20);
+            this.shortcutInput.Size = new System.Drawing.Size(108, 20);
             this.shortcutInput.TabIndex = 6;
-            this.shortcutInput.TextChanged += new System.EventHandler(this.shortcutInput_TextChanged);
             this.shortcutInput.KeyDown += new System.Windows.Forms.KeyEventHandler(this.shortcutInput_KeyDown);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(136, 75);
+            this.label3.Location = new System.Drawing.Point(120, 57);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(47, 13);
             this.label3.TabIndex = 7;
             this.label3.Text = "Shortcut";
             // 
-            // Form1
+            // alwaysOnTopCheckBox
+            // 
+            this.alwaysOnTopCheckBox.AutoSize = true;
+            this.alwaysOnTopCheckBox.Location = new System.Drawing.Point(129, 101);
+            this.alwaysOnTopCheckBox.Name = "alwaysOnTopCheckBox";
+            this.alwaysOnTopCheckBox.Size = new System.Drawing.Size(96, 17);
+            this.alwaysOnTopCheckBox.TabIndex = 8;
+            this.alwaysOnTopCheckBox.Text = "Always on Top";
+            this.alwaysOnTopCheckBox.UseVisualStyleBackColor = true;
+            this.alwaysOnTopCheckBox.CheckedChanged += new System.EventHandler(this.AlwaysOnTopCheckBox_CheckedChanged);
+            // 
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(352, 123);
+            this.ClientSize = new System.Drawing.Size(352, 130);
+            this.Controls.Add(this.alwaysOnTopCheckBox);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.shortcutInput);
             this.Controls.Add(this.searchBtn);
@@ -144,9 +155,9 @@ namespace LagSwitch
             this.Controls.Add(this.label1);
             this.Controls.Add(this.timeInput);
             this.Controls.Add(this.lagBtn);
-            this.Name = "Form1";
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.Name = "MainForm";
             this.Text = "Lag Switcher";
-            this.Load += new System.EventHandler(this.Form1_Load);
             ((System.ComponentModel.ISupportInitialize)(this.timeInput)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -165,6 +176,7 @@ namespace LagSwitch
         private System.Windows.Forms.Timer timer;
         private System.Windows.Forms.TextBox shortcutInput;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.CheckBox alwaysOnTopCheckBox;
     }
 }
 
